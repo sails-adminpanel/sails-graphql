@@ -2,11 +2,12 @@
   "author": {
     "name": "42pub"
   },
-  "bundleDependencies": false,
+  "bundleDependencies": [],
   "dependencies": {
     "apollo-server": "^2.24.1",
     "graphql": "^15.5.0",
     "jsonwebtoken": "^9.0.0",
+    "typescript": "^5.0.4",
     "waterline-criteria": "^2.0.0"
   },
   "deprecated": false,

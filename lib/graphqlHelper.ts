@@ -128,9 +128,7 @@ function addDirResolvers(dir) {
  */
 function getSchema () {
   Object.keys(whiteList).forEach(modelname => {
-    if (sails.models[modelname]?.graphql?.public !== false) {
-      addModelResolver(modelname);
-    }
+    addModelResolver(modelname);
   });
 
   addResolvers(modelsResolvers);
@@ -327,27 +325,27 @@ function addModelResolver(modelname) {
         let criteria = args.criteria || {};
         criteria = sanitizeCriteria(modelname, criteria);
 
-        // If model has User field need auth
-        if (isAuthRequired(modelName)) {
-          let auth = await JWTAuth.verify(
-            context.connectionParams.authorization
-          );
-          if (auth.userId) {
-            if (modelName.toLowerCase() === "user") {
-              criteria.id = auth.userId
-            } else {
-              criteria.user = auth.userId
-            }
-          } else {
-            throw 'Authorization failed'
-          }
-        }
-
         let query: any;
         if (criteria.where === undefined) {
           query = { where: criteria}
         } else {
           query = criteria
+        }
+
+        // If model has User field need auth
+        if (isAuthRequired(modelName)) {
+          let auth = await JWTAuth.verify(
+              context.connectionParams.authorization
+          );
+          if (auth.userId) {
+            if (modelName.toLowerCase() === "user") {
+              query.where.id = auth.userId
+            } else {
+              query.where.user = auth.userId
+            }
+          } else {
+            throw 'Authorization failed'
+          }
         }
 
         //sorting
@@ -388,29 +386,27 @@ function addModelResolver(modelname) {
         let criteria = args.criteria || {};
         criteria = sanitizeCriteria(modelname, criteria);
 
-        // If model has User field need auth
-        if (isAuthRequired(modelName)) {
-          let auth = await JWTAuth.verify(
-              context.connectionParams.authorization
-          );
-
-          if (auth.userId) {
-            if (modelName.toLowerCase() === "user") {
-              criteria.id = auth.userId
-            } else {
-              criteria.user = auth.userId
-            }
-          } else {
-            throw 'Authorization failed'
-          }
-        }
-
-
         let query: any;
         if (criteria.where === undefined) {
           query = { where: criteria}
         } else {
           query = criteria
+        }
+
+        // If model has User field need auth
+        if (isAuthRequired(modelName)) {
+          let auth = await JWTAuth.verify(
+              context.connectionParams.authorization
+          );
+          if (auth.userId) {
+            if (modelName.toLowerCase() === "user") {
+              query.where.id = auth.userId
+            } else {
+              query.where.user = auth.userId
+            }
+          } else {
+            throw 'Authorization failed'
+          }
         }
 
         let ORMRequest = sails.models[modelname].find(query);
@@ -434,11 +430,6 @@ function addModelResolver(modelname) {
       if (key.includes("__")) return;
       if (blackList.includes(`${modelName}.${key}`) || blackList.includes(`${key}`)) return;
       if (typeof sails.models[modelname].attributes[key] === 'function') return;
-
-      if (sails.models[modelname].attributes[key].graphql) {
-        if (sails.models[modelname].attributes[key].graphql.public === false)
-          return;
-      }
 
       let modelAttribute = sails.models[modelname].attributes[key];
 
@@ -515,25 +506,33 @@ function addModelResolver(modelname) {
             context.pubsub.asyncIterator(modelName),
           async (payload, args, context, info) => {
 
-            // For User models
-            if (sails.models[modelname].attributes.user || modelname === 'user') {
+            let criteria = args.criteria || {};
+            criteria = sanitizeCriteria(modelname, criteria);
 
+            let query: any;
+            if (criteria.where === undefined) {
+              query = { where: criteria}
+            } else {
+              query = criteria
+            }
+
+            // If model has User field need auth
+            if (isAuthRequired(modelName)) {
               let auth = await JWTAuth.verify(
-                context.connectionParams.authorization
+                  context.connectionParams.authorization
               );
-
-              if (auth.userId){
-                if (args.criteria) {
-                  args.criteria.user = auth.userId
+              if (auth.userId) {
+                if (modelName.toLowerCase() === "user") {
+                  query.where.id = auth.userId
                 } else {
-                  args.criteria = { user: auth.userId }
+                  query.where.user = auth.userId
                 }
               } else {
                 throw 'Authorization failed'
               }
             }
 
-            return checkCriteria(payload, args.criteria)
+            return checkCriteria(payload, criteria)
 
             // Filter by waterline criteria
             function checkCriteria(payload: any, criteria: any): boolean{

@@ -444,13 +444,13 @@ function addModelResolver(modelname) {
             : "id";
 
         let criteria = {};
-        criteria = sanitizeCriteria(modelAttribute[modelRelationType], criteria);
+        criteria = sanitizeCriteria(modelAttribute[modelRelationType].toLowerCase(), criteria);
 
         switch (modelRelationType) {
           case "model":
             resolvers[key] = async (parent, args, context) => {
               criteria[relationKey] = parent[key];
-              return await sails.models[modelAttribute[modelRelationType]].findOne(criteria);
+              return await sails.models[modelAttribute[modelRelationType].toLowerCase()].findOne(criteria);
             };
 
             // add virtual ids

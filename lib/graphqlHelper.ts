@@ -443,13 +443,13 @@ function addModelResolver(modelname) {
             ? modelAttribute.via
             : "id";
 
-        let criteria = {};
-        criteria = sanitizeCriteria(modelAttribute[modelRelationType].toLowerCase(), criteria);
-
         switch (modelRelationType) {
           case "model":
             resolvers[key] = async (parent, args, context) => {
+              let criteria = {};
               criteria[relationKey] = parent[key];
+              criteria = sanitizeCriteria(modelAttribute[modelRelationType].toLowerCase(), criteria);
+
               return await sails.models[modelAttribute[modelRelationType].toLowerCase()].findOne(criteria);
             };
 
@@ -461,7 +461,9 @@ function addModelResolver(modelname) {
             return;
           case "collection":
             resolvers[key] = async (parent, args, context) => {
-
+              let criteria = {};
+              criteria[relationKey] = parent[key];
+              criteria = sanitizeCriteria(modelAttribute[modelRelationType].toLowerCase(), criteria);
 
               let subquery: any = { where: criteria};
               //sorting

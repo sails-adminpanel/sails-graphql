@@ -173,7 +173,7 @@ function createType(model) {
       }
       type += '  ' + prop + ': ' + scalarType + '\n';
     }
-    
+
     // MODEL SCHEMA GENERATION
     if (attributes[prop].model) {
       let relationModel = sails.models[attributes[prop].model.toLowerCase()]
@@ -279,7 +279,7 @@ function sanitizeCriteria(modelname, criteria) {
   if (sails.models[modelname].attributes.enable){
     criteria.enable = true;
   }
-  
+
   if (sails.models[modelname].attributes.isDeleted){
     criteria.isDeleted = false;
   }
@@ -326,7 +326,7 @@ function addModelResolver(modelname) {
       fn: async function (parent, args, context) {
         let criteria = args.criteria || {};
         criteria = sanitizeCriteria(modelname, criteria);
-        
+
         // If model has User field need auth
         if (isAuthRequired(modelName)) {
           let auth = await JWTAuth.verify(
@@ -338,13 +338,13 @@ function addModelResolver(modelname) {
             throw 'Authorization failed'
           }
         }
-        
+
         let query: any = { where: criteria};
         //sorting
         if (sails.models[modelname].attributes.order) {
           query.sort = 'order ASC'
         }
-        
+
         console.log(">>>",  modelName, query)
         let result = await sails.models[modelname].find(query);
         return result;
@@ -352,7 +352,7 @@ function addModelResolver(modelname) {
     };
     modelsResolvers.Query[methodName] = resolverQuery;
   }
-    
+
     /////////////////////////////
     //  ⭐️ Models fields resolvers
     /////////////////////////////
@@ -381,16 +381,16 @@ function addModelResolver(modelname) {
             ? modelAttribute.via
             : "id";
 
-        let criteria = {};
-        criteria = sanitizeCriteria(modelAttribute[modelRelationType], criteria);
-
         switch (modelRelationType) {
           case "model":
             resolvers[key] = async (parent, args, context) => {
+              let criteria = {};
               criteria[relationKey] = parent[key];
+              criteria = sanitizeCriteria(modelAttribute[modelRelationType], criteria);
+
               return await sails.models[modelAttribute[modelRelationType]].findOne(criteria);
             };
-            
+
             // add virtual ids
             resolvers[`${key}Id`] = async (parent, args, context) => {
                 return parent && parent[key];
@@ -399,7 +399,9 @@ function addModelResolver(modelname) {
             return;
           case "collection":
             resolvers[key] = async (parent, args, context) => {
-
+              let criteria = {};
+              criteria[relationKey] = parent[key];
+              criteria = sanitizeCriteria(modelAttribute[modelRelationType], criteria);
 
               let subquery: any = { where: criteria};
               //sorting
@@ -411,7 +413,7 @@ function addModelResolver(modelname) {
               let result = (await sails.models[modelname].findOne({id: parent.id}).populate(key, subquery));
               result = result ? result[key] : null;
 
-              
+
               return result;
             };
 
@@ -432,7 +434,7 @@ function addModelResolver(modelname) {
   ///////////////////////////
   // ⭐️ Subscription resolver
   ///////////////////////////
-  
+
   if (!blackList.includes(`${modelName}`) && whiteList[modelname].includes('subscription')) {
     models.add(modelname);
     const methodName = `${firstLetterToLowerCase(modelName)}`;
@@ -455,7 +457,7 @@ function addModelResolver(modelname) {
                 if (args.criteria) {
                   args.criteria.user = auth.userId
                 } else {
-                  args.criteria = { user: auth.userId } 
+                  args.criteria = { user: auth.userId }
                 }
               } else {
                 throw 'Authorization failed'
@@ -463,7 +465,7 @@ function addModelResolver(modelname) {
             }
 
             return checkCriteria(payload, args.criteria)
-            
+
             // Filter by waterline criteria
             function checkCriteria(payload: any, criteria: any): boolean{
 
@@ -476,7 +478,7 @@ function addModelResolver(modelname) {
               if ( typeof criteria === 'object' && !Array.isArray(criteria) && criteria !== null ) {
                 return (WLCriteria(payload, { where: criteria }).results).length > 0
               }
-            
+
               return false
             }
 

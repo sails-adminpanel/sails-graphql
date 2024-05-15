@@ -62,10 +62,9 @@ exports.default = {
                         onConnect: (connectionParams, webSocket) => {
                             let exContext = {};
                             if (connectionParams) {
-                                if (!connectionParams["authorization"] &&
-                                    connectionParams["Authorization"])
-                                    connectionParams["authorization"] =
-                                        connectionParams["Authorization"];
+                                if (!connectionParams["authorization"] && connectionParams["Authorization"]) {
+                                    connectionParams["authorization"] = connectionParams["Authorization"];
+                                }
                                 exContext["connectionParams"] = connectionParams;
                             }
                             exContext["pubsub"] = pubsub;
@@ -73,11 +72,22 @@ exports.default = {
                         },
                     },
                     context: ({ req, connection }) => __awaiter(this, void 0, void 0, function* () {
-                        if (connection) {
+                        if (connection && connection.context) {
                             return connection.context;
                         }
                         else {
-                            return Object.assign({}, req);
+                            const headers = {};
+                            if (req === null || req === void 0 ? void 0 : req.rawHeaders) {
+                                for (let i = 0; i < req.rawHeaders.length; i += 2) {
+                                    const name = req.rawHeaders[i];
+                                    const value = req.rawHeaders[i + 1];
+                                    headers[name.toLowerCase()] = value;
+                                }
+                            }
+                            if (!headers["authorization"] && headers["Authorization"]) {
+                                headers["authorization"] = headers["Authorization"];
+                            }
+                            return Object.assign(Object.assign({}, req), { connectionParams: headers });
                         }
                     }),
                 });

@@ -1,5 +1,4 @@
 import * as crypto from "crypto"
-
 import * as jwt from 'jsonwebtoken'
 
 process.env.JWT_SECRET = process.env.JWT_SECRET ?? getRandom();
@@ -7,11 +6,7 @@ process.env.JWT_SECRET = process.env.JWT_SECRET ?? getRandom();
 // GEN SECRET
 type AuthData = {
   userId: string
-  deviceId: string
-  authToken: string
 }
-
-
 
 export class JWTAuth {
   public static sign(authData: AuthData): string {
@@ -20,7 +15,7 @@ export class JWTAuth {
     }, process.env.JWT_SECRET, { expiresIn: 60 * 60 });
     return ""
   }
-  
+
   public static async verify(token: string): Promise<AuthData>{
     return jwt.verify(token, process.env.JWT_SECRET) as AuthData
   }

@@ -57,6 +57,7 @@ exports.default = {
             try {
                 apolloServer = new apollo_server_express_1.ApolloServer({
                     typeDefs,
+                    playground: true,
                     resolvers: [resolvers, AdditionalResolvers],
                     subscriptions: {
                         onConnect: (connectionParams, webSocket) => {

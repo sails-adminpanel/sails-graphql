@@ -56,6 +56,7 @@ export default {
     try {
       apolloServer = new ApolloServer({
         typeDefs,
+        playground: true,
         resolvers: [resolvers, AdditionalResolvers],
         subscriptions: {
           onConnect: (connectionParams, webSocket) => {

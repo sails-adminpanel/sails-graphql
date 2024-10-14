@@ -25,8 +25,8 @@ exports.default = {
         _.merge(AdditionalResolvers, resolver);
     },
     init: function () {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             let resolversApiPath = path.resolve(__dirname, "./resolvers");
             if (fs.existsSync(resolversApiPath)) {
                 helper.addDirResolvers(resolversApiPath);
@@ -58,6 +58,7 @@ exports.default = {
                 apolloServer = new apollo_server_express_1.ApolloServer({
                     typeDefs,
                     playground: true,
+                    introspection: true,
                     resolvers: [resolvers, AdditionalResolvers],
                     subscriptions: {
                         onConnect: (connectionParams, webSocket) => {
@@ -72,7 +73,7 @@ exports.default = {
                             return exContext;
                         },
                     },
-                    context: ({ req, connection }) => __awaiter(this, void 0, void 0, function* () {
+                    context: (_a) => __awaiter(this, [_a], void 0, function* ({ req, connection }) {
                         if (connection && connection.context) {
                             return connection.context;
                         }
